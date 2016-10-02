@@ -1,0 +1,12 @@
+#Imagenes
+
+*.png
+*.jpg
+*.tiff
+*.gif
+*.jpeg
+
+#Temporales
+
+*~
+~*
