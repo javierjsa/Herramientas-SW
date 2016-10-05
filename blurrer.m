@@ -1,10 +1,11 @@
-function blurrer (directory,file_type);
+function blurrer (directory);
 % Loads all images of file type in directory
 % and applies gaussian kernels of various sizes
-% usage: blurrer('./images','jpg')
+% jpg images only
+% usage: blurrer('./images')
 
- 
  actual=pwd; 
+ file_type='jpg';
  size =[5,15,21];
  cd(directory); 
  exp=strcat('./*.',file_type);
@@ -19,7 +20,7 @@ function blurrer (directory,file_type);
   disp('Archivos generados');
   for j=1:length(size)     
     blur=imsmooth(img,'Gaussian',size(j));
-    nombre_blur=strcat(nombre_trunc,'_',num2str(j),'.jpg');
+    nombre_blur=strcat(nombre_trunc,'-',num2str(j),'.jpg');
     disp(nombre_blur);
     imwrite(blur,nombre_blur);
   endfor  
