@@ -5,8 +5,15 @@
 *.tiff
 *.gif
 *.jpeg
+*.avi
+*.mp4
+*.divx
+*.xvid
 
 #Temporales
 
 *~
 ~*
+octave-workspace
+*.pyc
+
