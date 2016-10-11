@@ -1,5 +1,6 @@
 function rangecolorselector(directory)
 %selects HSV values for colot-based tracking
+%requires gnuplot to work
 %rangecolorselector('./images')
 %jpg images only
 
@@ -12,75 +13,118 @@ function rangecolorselector(directory)
 % q - quit
 
 
+
+graphics_toolkit("gnuplot");
+
 frames=dir ('*.jpg');
 current=1;
 
-%hmin,hmax,smin,smax,vmin,vmax,downs,up
-values=[0,0,0,0,0,0,0.1,0.2];
+%hmin,hmax,smin,smax,vmin,vmax,down,up
+values=[0,1,0,1,0,1,0,1];
 
-
-key ='_';
-new='h';
+step=0.05;
+%key ='_';
+new='_';
 old='_';
 values(8)=values(2);
 values(7)=values(1);
 
-img=imread(frames(current).name);
+
+
 original=imread(frames(current).name);
+hsv_img=rgb2hsv(original);
+fprintf("---------------------------------------------\n");  
+fprintf("h-HUE, s-SATURATION, v-VALUE\n");  
+fprintf("o/p - decrementar/incrementar limite superior\n");
+fprintf("k/l - decrementar/incrementar limite inferior\n");
+fprintf("---------------------------------------------\n\n");  
+fprintf("Pulse una tecla sobre la imagen para continuar\n");
+fflush(stdout);
 imshow(original);
 waitforbuttonpress();
 close ();
 while (new!='q')
 
   switch (new)
-    case {'h','s','v'}              
+    case {'h','s','v'}
+      close ()    
+      fprintf("h-HUE, s-SATURATION, v-VALUE\n");   
+      output(values);   
       values=update(values,new,old);    
       old=new;
       new=key;
-      fprintf("------\nNEW: %s, OLD: %s\n------\n",new,old);
+      fprintf("Seleccionado: %s\n---------------\n",old);
       fflush(stdout);      
-      imshow(original);
-      waitforbuttonpress();
-      close ();    
-    case 'p'     
-      values(8)=values(8)+10;
+    case 'p'
+     if(values(8)<1)     
+      values(8)=values(8)+step;
       values=update(values,new,old);
       output(values);      
-      hsv_img= createMask(values,original);
-      showImage(hsv_img);     
-    case 'o'      
-      values(8)=values(8)-10;
-      output(values);      
-      values=update(values,new,old);
       hsv_img= createMask(values,original);
       showImage(hsv_img);
-    case 'l'     
-      values(7)=values(7)+10;
-      values=update(values,new,old);
-      output(values);      
-      hsv_img= createMask(values,original);
-      showImage(hsv_img);     
-    case 'k'      
-      values(7)=values(7)-10;
-      output(values);      
-      values=update(values,new,old);
-      hsv_img= createMask(values,original);
-      showImage(hsv_img);     
+     else
+      fprintf("Limite superior alcanzado\n"); 
+      fflush(stdout);         
+     endif     
+    case 'o'      
+      if (values(8)>0)
+        values(8)=values(8)-step;
+        output(values);           
+        values=update(values,new,old);
+        hsv_img= createMask(values,original);
+        showImage(hsv_img);
+      else  
+        fprintf("Limite inferior alcanzado\n");
+        fflush(stdout);
+      endif  
+    case 'l'
+      if (values(7)<1)    
+        values(7)=values(7)+step;
+        values=update(values,new,old);
+        output(values);             
+        hsv_img= createMask(values,original);
+        showImage(hsv_img);     
+      else  
+        fprinf("Limite inferior alcanzado\n");
+        fflush(stdout);
+      endif  
+    case 'k'     
+      if(values(7)>0) 
+        values(7)=values(7)-step;
+        output(values);      
+        fflush(stdout);
+        values=update(values,new,old);
+        hsv_img= createMask(values,original);
+        showImage(hsv_img);
+      else
+        fprintf("Limite inferior alcanzado\n");
+        fflush(stdout);
+      endif     
     case 'n'
-      current=current+1;
-      original=imread(frames(current).name);
-      showImage(original);
+      if(current<length(frames))
+        current=current+1;
+        original=imread(frames(current).name);
+        showImage(original);
+        waitforbuttonpress();
+      else  
+        fprintf("No hay mas imagenes\n");
+        fflush(stdout);
+        showImage(hsv_img);
+      endif    
+        
     otherwise
-      new=old;
-      
+      new=old; 
+ 
   endswitch
     
-
-new = kbhit();
+    
+new=kbhit();
 
 
 endwhile
 close all;
+output(values);  
+
 endfunction
 
 %devuelve la imagen con la mascara aplicada
@@ -107,6 +151,8 @@ endfunction
 %refresca la imagen cuando cambian los datos
 %y la cierra para seguir leyendo del teclado
 function showImage(image)
+  fprintf("Pulse una tecla sobre la imagen para continuar\n");
+  fflush(stdout);
   img=hsv2rgb(image);
   imshow(img);
   waitforbuttonpress();
@@ -120,8 +166,7 @@ function output(values)
   fprintf("Smax: %f - Smin %f\n",values(4),values(3));
   fprintf("Vmax: %f - Vmin %f\n",values(6),values(5));
   fprintf("--------------------------\n");
-  fflush(stdout);
-  fflush(stderr);
+  fflush(stdout);  
 endfunction
 
 %actualiza los valores cuando se cambia entre HSV
