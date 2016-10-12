@@ -37,6 +37,7 @@ fprintf("---------------------------------------------\n");
 fprintf("h-HUE, s-SATURATION, v-VALUE\n");  
 fprintf("o/p - decrementar/incrementar limite superior\n");
 fprintf("k/l - decrementar/incrementar limite inferior\n");
+fprintf("n - siguiente imagen.  q- salir\n");
 fprintf("---------------------------------------------\n\n");  
 fprintf("Pulse una tecla sobre la imagen para continuar\n");
 fflush(stdout);
@@ -51,43 +52,46 @@ while (new!='q')
       fprintf("h-HUE, s-SATURATION, v-VALUE\n");   
       output(values);   
       values=update(values,new,old);    
-      old=new;
-      new=key;
+      old=new;      
       fprintf("Seleccionado: %s\n---------------\n",old);
-      fflush(stdout);      
+      fflush(stdout);   
+      
     case 'p'
      if(values(8)<1)     
-      values(8)=values(8)+step;
-      values=update(values,new,old);
-      output(values);      
-      hsv_img= createMask(values,original);
-      showImage(hsv_img);
+      values(8)=values(8)+step;      
      else
       fprintf("Limite superior alcanzado\n"); 
       fflush(stdout);         
      endif     
+     values=update(values,new,old);
+     output(values);      
+     hsv_img= createMask(values,original);
+     showImage(hsv_img);
+     
     case 'o'      
       if (values(8)>0)
-        values(8)=values(8)-step;
-        output(values);           
-        values=update(values,new,old);
-        hsv_img= createMask(values,original);
-        showImage(hsv_img);
+        values(8)=values(8)-step;            
       else  
         fprintf("Limite inferior alcanzado\n");
         fflush(stdout);
       endif  
+      output(values);
+      values=update(values,new,old);
+      hsv_img= createMask(values,original);
+      showImage(hsv_img);
+      
     case 'l'
       if (values(7)<1)    
-        values(7)=values(7)+step;
-        values=update(values,new,old);
-        output(values);             
-        hsv_img= createMask(values,original);
-        showImage(hsv_img);     
+        values(7)=values(7)+step;             
       else  
         fprinf("Limite inferior alcanzado\n");
         fflush(stdout);
-      endif  
+      endif
+      values=update(values,new,old);
+      output(values);             
+      hsv_img= createMask(values,original);
+      showImage(hsv_img);  
+      
     case 'k'     
       if(values(7)>0) 
         values(7)=values(7)-step;
@@ -100,12 +104,20 @@ while (new!='q')
         fprintf("Limite inferior alcanzado\n");
         fflush(stdout);
       endif     
+      output(values);
+      values=update(values,new,old);
+      hsv_img= createMask(values,original);
+      showImage(hsv_img);
+      
     case 'n'
-      if(current<length(frames))
+      if(current<length(frames))        
         current=current+1;
+        fprintf("Nueva imagen:%s\n",frames(current).name);
+        output(values);
+        fflush(stdout);
         original=imread(frames(current).name);
-        showImage(original);
-        waitforbuttonpress();
+        hsv_img= createMask(values,original);
+        showImage(hsv_img);
       else  
         fprintf("No hay mas imagenes\n");
         fflush(stdout);
@@ -116,10 +128,8 @@ while (new!='q')
       new=old; 
  
   endswitch
-    
-    
+        
 new=kbhit();
-
 
 endwhile
 close all;
@@ -136,9 +146,9 @@ function hsv_img = createMask(values,original)
   v=hsv_img(:,:,2);
   s=hsv_img(:,:,3);
 
-  hmask=h>values(1) & h<values(2);
-  smask=s>values(3) & s<values(4);
-  vmask=v>values(5) & v<values(6);
+  hmask=h>=values(1) & h<=values(2);
+  smask=s>=values(3) & s<=values(4);
+  vmask=v>=values(5) & v<=values(6);
 
   mask= hmask & smask & vmask;
   
