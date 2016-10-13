@@ -13,16 +13,16 @@ function rangecolorselector(directory)
 % q - quit
 
 
-
+actual=pwd;
 graphics_toolkit("gnuplot");
-
+cd(directory);
 frames=dir ('*.jpg');
 current=1;
 
 %hmin,hmax,smin,smax,vmin,vmax,down,up
 values=[0,1,0,1,0,1,0,1];
 
-step=0.05;
+step=0.01;
 %key ='_';
 new='_';
 old='_';
@@ -45,7 +45,8 @@ imshow(original);
 waitforbuttonpress();
 close ();
 while (new!='q')
-
+  fprintf("%s\n",new);
+  fflush(stdout);
   switch (new)
     case {'h','s','v'}
       close ()    
@@ -133,8 +134,10 @@ new=kbhit();
 
 endwhile
 close all;
-output(values);  
-
+filtro=values(1:6);
+output(filtro);  
+cd(actual);
+color_tracking(values,directory);
 endfunction
 
 %devuelve la imagen con la mascara aplicada
@@ -209,3 +212,39 @@ function values = update(values,new,old)
    endswitch  
    
 endfunction   
+
+
+function color_tracking(filtro,directory)
+%Hmax: 0.450000 - Hmin 0.100000
+%Smax: 1.000000 - Smin 0.100000
+%Vmax: 0.650000 - Vmin 0.250000
+%hmin,hmax,smin,smax,vmin,vmax
+filtro=[0.1,0.45,0.1,1,0.25,0.65];
+actual=pwd;
+cd(directory)
+frames=dir ('*.jpg');
+
+current=1;
+
+while(current<=length(frames))
+
+  original=imread(frames(current).name);
+  figure(1);
+  imshow(original);
+  fprintf("%s\n",frames(current).name);
+  fflush(stdout);
+  filtrada=imsmooth(original,"Gaussian",3);
+  hsv_img= createMask(filtro,filtrada);
+  img=hsv2rgb(hsv_img);
+  figure(2);
+  imshow(img);
+  current=current+1;
+  new=kbhit(1);
+  if (new=='q')
+    
+    break;
+  endif  
+endwhile
+close all;
+cd(actual);
+endfunction
