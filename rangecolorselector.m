@@ -12,7 +12,7 @@ function rangecolorselector(directory)
 % n - next frame
 % q - quit
 
-
+fflush(stdin);
 actual=pwd;
 graphics_toolkit("gnuplot");
 cd(directory);
@@ -219,7 +219,9 @@ function color_tracking(filtro,directory)
 %Smax: 1.000000 - Smin 0.100000
 %Vmax: 0.650000 - Vmin 0.250000
 %hmin,hmax,smin,smax,vmin,vmax
+fflush(stdin);
 filtro=[0.1,0.45,0.1,1,0.25,0.65];
+elem=strel ("square", 3);
 actual=pwd;
 cd(directory)
 frames=dir ('*.jpg');
@@ -234,8 +236,20 @@ while(current<=length(frames))
   fprintf("%s\n",frames(current).name);
   fflush(stdout);
   filtrada=imsmooth(original,"Gaussian",3);
+  %filtro
   hsv_img= createMask(filtro,filtrada);
+  %erosion
+  hsv_img=imerode(hsv_img,elem,'same');
+  hsv_img=imerode(hsv_img,elem,'same');
+  %dilatacion
+  hsv_img=imdilate(hsv_img,elem,'same');
+  hsv_img=imdilate(hsv_img,elem,'same');
   img=hsv2rgb(hsv_img);
+  img_gray=im2bw(img);
+  figure(3)
+  imshow(img_gray);
+  props=regionprops(img_gray);
+  disp(props);  
   figure(2);
   imshow(img);
   current=current+1;
