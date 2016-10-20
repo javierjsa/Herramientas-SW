@@ -1,17 +1,19 @@
 function rangecolorselector(directory)
-%selects HSV values for colot-based tracking
+%Creaates a HSV filter for color-based tracking
 %requires gnuplot to work
-%rangecolorselector('./images')
+%usage: rangecolorselector('./images')
 %jpg images only
-
+%Keys:
 % h - select hue
 % s - select saturation
-% v - select values
-% p - increase
-% o - decrease
+% v - select value
+% p - increase upper limit
+% o - decrease upper limit
+% l - increase lower limit
+% k - decrease lower limit
 % n - next frame
 % q - quit
-
+clc;
 fflush(stdin);
 actual=pwd;
 graphics_toolkit("gnuplot");
@@ -29,115 +31,129 @@ old='_';
 values(8)=values(2);
 values(7)=values(1);
 
-
-
 original=imread(frames(current).name);
 hsv_img=rgb2hsv(original);
-fprintf("---------------------------------------------\n");  
-fprintf("h-HUE, s-SATURATION, v-VALUE\n");  
-fprintf("o/p - decrementar/incrementar limite superior\n");
-fprintf("k/l - decrementar/incrementar limite inferior\n");
-fprintf("n - siguiente imagen.  q- salir\n");
-fprintf("---------------------------------------------\n\n");  
+leyenda();
+output(values);
+imshow(original);
 fprintf("Pulse una tecla sobre la imagen para continuar\n");
 fflush(stdout);
-imshow(original);
 waitforbuttonpress();
 close ();
+clc;
 while (new!='q')
-  fprintf("%s\n",new);
-  fflush(stdout);
+  %fprintf("%s\n",new);  
+  
   switch (new)
     case {'h','s','v'}
       close ()    
-      fprintf("h-HUE, s-SATURATION, v-VALUE\n");   
-      output(values);   
+      %fprintf("h-HUE, s-SATURATION, v-VALUE\n");   
+      %output(values);   
       values=update(values,new,old);    
       old=new;      
-      fprintf("Seleccionado: %s\n---------------\n",old);
+      fprintf("---------------------------------------------\n");
+      fprintf("Seleccionado: %s\n",old);
+      fprintf("---------------------------------------------\n");
       fflush(stdout);   
-      
+%%%%%%%%%FALTA COMPROBAR QUE VALOR MAX Y MIN NO SE CRUZAN %%%%%%%%%
     case 'p'
      if(values(8)<1)     
       values(8)=values(8)+step;      
      else
+      fprintf("---------------------------------------------\n");
       fprintf("Limite superior alcanzado\n"); 
+      fprintf("---------------------------------------------\n");
       fflush(stdout);         
      endif     
      values=update(values,new,old);
-     output(values);      
+     %output(values);      
      hsv_img= createMask(values,original);
-     showImage(hsv_img);
+     showImage(hsv_img,values);
      
     case 'o'      
       if (values(8)>0)
         values(8)=values(8)-step;            
       else  
+        fprintf("---------------------------------------------\n");
         fprintf("Limite inferior alcanzado\n");
+        fprintf("---------------------------------------------\n");
         fflush(stdout);
       endif  
-      output(values);
+      %output(values);
       values=update(values,new,old);
       hsv_img= createMask(values,original);
-      showImage(hsv_img);
+      showImage(hsv_img,values);
       
     case 'l'
       if (values(7)<1)    
         values(7)=values(7)+step;             
       else  
+        fprintf("---------------------------------------------\n");
         fprinf("Limite inferior alcanzado\n");
+        fprintf("---------------------------------------------\n");
         fflush(stdout);
       endif
       values=update(values,new,old);
-      output(values);             
+      %output(values);             
       hsv_img= createMask(values,original);
-      showImage(hsv_img);  
+      showImage(hsv_img,values);  
       
     case 'k'     
       if(values(7)>0) 
         values(7)=values(7)-step;
-        output(values);      
+        %output(values);      
         fflush(stdout);
         values=update(values,new,old);
         hsv_img= createMask(values,original);
-        showImage(hsv_img);
+        showImage(hsv_img,values);
       else
+        fprintf("---------------------------------------------\n");
         fprintf("Limite inferior alcanzado\n");
+        fprintf("---------------------------------------------\n");
         fflush(stdout);
       endif     
-      output(values);
+      %output(values);
       values=update(values,new,old);
       hsv_img= createMask(values,original);
-      showImage(hsv_img);
+      showImage(hsv_img,values);
       
     case 'n'
       if(current<length(frames))        
         current=current+1;
+        fprintf("---------------------------------------------\n");
         fprintf("Nueva imagen:%s\n",frames(current).name);
-        output(values);
+        fprintf("---------------------------------------------\n");
+        %output(values);
         fflush(stdout);
         original=imread(frames(current).name);
         hsv_img= createMask(values,original);
-        showImage(hsv_img);
+        showImage(hsv_img,values);
       else  
+        fprintf("---------------------------------------------\n");
         fprintf("No hay mas imagenes\n");
+        fprintf("---------------------------------------------\n");
         fflush(stdout);
-        showImage(hsv_img);
+        showImage(hsv_img,values);
       endif    
         
     otherwise
       new=old; 
  
   endswitch
-        
+leyenda(); 
+output(values);  
+fflush(stdout);      
 new=kbhit();
-
+clc;
 endwhile
 close all;
 filtro=values(1:6);
 output(filtro);  
 cd(actual);
-color_tracking(values,directory);
+clc;
+fprintf("Valores del filtro [hmin,hmax,smin,smax,vmin,vmax]:\n");
+fprintf("[%.3f,%.3f,%.3f,%.3f,%.3f,%.3f]\n",filtro(1),filtro(2),filtro(3),filtro(4),filtro(5),filtro(6));
+fflush(stdout);
 endfunction
 
 %devuelve la imagen con la mascara aplicada
@@ -163,26 +179,18 @@ endfunction
 
 %refresca la imagen cuando cambian los datos
 %y la cierra para seguir leyendo del teclado
-function showImage(image)
+function showImage(image,values)  
   fprintf("Pulse una tecla sobre la imagen para continuar\n");
   fflush(stdout);
   img=hsv2rgb(image);
   imshow(img);
   waitforbuttonpress();
+  clc;
+  
   close();
 endfunction  
 
-%muestra los valores actuales por pantalla
-function output(values)
-  fprintf("--------------------------\n");
-  fprintf("Hmax: %f - Hmin %f\n",values(2),values(1));
-  fprintf("Smax: %f - Smin %f\n",values(4),values(3));
-  fprintf("Vmax: %f - Vmin %f\n",values(6),values(5));
-  fprintf("--------------------------\n");
-  fflush(stdout);  
-endfunction
-
-%actualiza los valores cuando se cambia entre HSV
+%actualiza los valores cuando se cambia entre H,S,V
 function values = update(values,new,old)
 
   switch old
@@ -261,4 +269,23 @@ while(current<=length(frames))
 endwhile
 close all;
 cd(actual);
+endfunction
+
+function leyenda()
+  fprintf("---------------------------------------------\n");  
+  fprintf("h-HUE, s-SATURATION, v-VALUE\n");  
+  fprintf("o/p - decrementar/incrementar limite superior\n");
+  fprintf("k/l - decrementar/incrementar limite inferior\n");
+  fprintf("n - siguiente imagen.  q- salir\n");
+  fprintf("---------------------------------------------\n"); 
+endfunction
+
+%muestra los valores actuales por pantalla
+function output(values)
+  fprintf("---------------------------------------------\n");
+  fprintf("Hmax: %f - Hmin %f\n",values(2),values(1));
+  fprintf("Smax: %f - Smin %f\n",values(4),values(3));
+  fprintf("Vmax: %f - Vmin %f\n",values(6),values(5));
+  fprintf("---------------------------------------------\n");
+  fflush(stdout);  
 endfunction
