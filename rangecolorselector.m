@@ -13,6 +13,7 @@ function rangecolorselector(directory)
 % k - decrease lower limit
 % n - next frame
 % q - quit
+
 clc;
 fflush(stdin);
 actual=pwd;
@@ -20,18 +21,19 @@ graphics_toolkit("gnuplot");
 cd(directory);
 frames=dir ('*.jpg');
 current=1;
+current_name="";
 
 %hmin,hmax,smin,smax,vmin,vmax,down,up
 values=[0,1,0,1,0,1,0,1];
 
-step=0.01;
+step=0.05;
 %key ='_';
 new='_';
 old='_';
 values(8)=values(2);
 values(7)=values(1);
-
-original=imread(frames(current).name);
+current_name=nextFrame(current)
+original=imread(current_name);
 hsv_img=rgb2hsv(original);
 leyenda();
 output(values);
@@ -121,11 +123,12 @@ while (new!='q')
       if(current<length(frames))        
         current=current+1;
         fprintf("---------------------------------------------\n");
-        fprintf("Nueva imagen:%s\n",frames(current).name);
+        fprintf("Nueva imagen:%s\n",current_name);
         fprintf("---------------------------------------------\n");
         %output(values);
         fflush(stdout);
-        original=imread(frames(current).name);
+        current_name=nextFrame(current);
+        original=imread(current_name);
         hsv_img= createMask(values,original);
         showImage(hsv_img,values);
       else  
@@ -223,9 +226,7 @@ endfunction
 
 
 function color_tracking(filtro,directory)
-%Hmax: 0.450000 - Hmin 0.100000
-%Smax: 1.000000 - Smin 0.100000
-%Vmax: 0.650000 - Vmin 0.250000
+%[0.250,0.400,0.450,1.000,0.200,0.700]
 %hmin,hmax,smin,smax,vmin,vmax
 fflush(stdin);
 filtro=[0.1,0.45,0.1,1,0.25,0.65];
@@ -289,3 +290,10 @@ function output(values)
   fprintf("---------------------------------------------\n");
   fflush(stdout);  
 endfunction
+
+function next=nextFrame(current)  
+  number=int2str(current);   
+  next=strcat("frame",number);
+  next=strcat(next,".jpg");
+  i=i+1;
+endfunction  
