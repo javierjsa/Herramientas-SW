@@ -1,8 +1,8 @@
 function color_tracking(filtro,directory)
-%[0.250,0.400,0.450,1.000,0.200,0.700]
 %hmin,hmax,smin,smax,vmin,vmax
+%color_tracking([0.250,0.400,0.450,1.000,0.15,1],"./frames")
 fflush(stdin);
-filtro=[0.1,0.45,0.1,1,0.25,0.65];
+%filtro=[0.1,0.45,0.1,1,0.25,0.65];
 elem=strel ("square", 3);
 actual=pwd;
 cd(directory)
@@ -12,10 +12,11 @@ current=1;
 
 while(current<=length(frames))
 
-  original=imread(frames(current).name);
+  current_frame=nextFrame(current);
+  original=imread(current_frame);
   figure(1);
   imshow(original);
-  fprintf("%s\n",frames(current).name);
+  fprintf("%s\n",current_frame);
   fflush(stdout);
   filtrada=imsmooth(original,"Gaussian",3);
   %filtro
@@ -31,19 +32,26 @@ while(current<=length(frames))
   figure(3)
   imshow(img_gray);
   props=regionprops(img_gray);
-  disp(props);  
+  if length(props)>0
+    index=selectArea(props);
+    fprintf("index %d\n",index);
+    coord=computeRect(props(index));
+    disp(coord);
+    figure(1);
+    rectangle("Position",coord,"LineWidth",2,"EdgeColor",'green');
+  endif    
   figure(2);
   imshow(img);
   current=current+1;
   new=kbhit(1);
-  if (new=='q')
-    
+  if (new=='q')    
     break;
-  endif  
+  endif    
 endwhile
 close all;
 cd(actual);
 endfunction
+
 %devuelve la imagen con la mascara aplicada
 function hsv_img = createMask(values,original)
 
@@ -69,5 +77,27 @@ function next=nextFrame(current)
   number=int2str(current);   
   next=strcat("frame",number);
   next=strcat(next,".jpg");
-  i=i+1;
+  
 endfunction  
+
+function index =selectArea(regions)
+  i=1;
+  j = length(regions);
+  area = 0;
+  index=1;
+  while (i<j)
+    elem = regions(i);
+    field=getfield(elem,"Area");
+    if (field>area)
+      index=i;
+    endif  
+    i=i+1;
+  endwhile
+  
+endfunction
+
+function coord = computeRect(elem)
+  coord=getfield(elem,"BoundingBox");
+  coord(2)=coord(1)-coord(3);  
+
+endfunction

@@ -21,7 +21,7 @@ graphics_toolkit("gnuplot");
 cd(directory);
 frames=dir ('*.jpg');
 current=1;
-current_name="";
+current_frame="";
 
 %hmin,hmax,smin,smax,vmin,vmax,down,up
 values=[0,1,0,1,0,1,0,1];
@@ -32,8 +32,8 @@ new='_';
 old='_';
 values(8)=values(2);
 values(7)=values(1);
-current_name=nextFrame(current)
-original=imread(current_name);
+current_frame=nextFrame(current)
+original=imread(current_frame);
 hsv_img=rgb2hsv(original);
 leyenda();
 output(values);
@@ -123,12 +123,12 @@ while (new!='q')
       if(current<length(frames))        
         current=current+1;
         fprintf("---------------------------------------------\n");
-        fprintf("Nueva imagen:%s\n",current_name);
+        fprintf("Nueva imagen:%s\n",current_frame);
         fprintf("---------------------------------------------\n");
         %output(values);
         fflush(stdout);
-        current_name=nextFrame(current);
-        original=imread(current_name);
+        current_frame=nextFrame(current);
+        original=imread(current_frame);
         hsv_img= createMask(values,original);
         showImage(hsv_img,values);
       else  
@@ -224,54 +224,6 @@ function values = update(values,new,old)
    
 endfunction   
 
-
-function color_tracking(filtro,directory)
-%[0.250,0.400,0.450,1.000,0.200,0.700]
-%hmin,hmax,smin,smax,vmin,vmax
-fflush(stdin);
-filtro=[0.1,0.45,0.1,1,0.25,0.65];
-elem=strel ("square", 3);
-actual=pwd;
-cd(directory)
-frames=dir ('*.jpg');
-
-current=1;
-
-while(current<=length(frames))
-
-  original=imread(frames(current).name);
-  figure(1);
-  imshow(original);
-  fprintf("%s\n",frames(current).name);
-  fflush(stdout);
-  filtrada=imsmooth(original,"Gaussian",3);
-  %filtro
-  hsv_img= createMask(filtro,filtrada);
-  %erosion
-  hsv_img=imerode(hsv_img,elem,'same');
-  hsv_img=imerode(hsv_img,elem,'same');
-  %dilatacion
-  hsv_img=imdilate(hsv_img,elem,'same');
-  hsv_img=imdilate(hsv_img,elem,'same');
-  img=hsv2rgb(hsv_img);
-  img_gray=im2bw(img);
-  figure(3)
-  imshow(img_gray);
-  props=regionprops(img_gray);
-  disp(props);  
-  figure(2);
-  imshow(img);
-  current=current+1;
-  new=kbhit(1);
-  if (new=='q')
-    
-    break;
-  endif  
-endwhile
-close all;
-cd(actual);
-endfunction
-
 function leyenda()
   fprintf("---------------------------------------------\n");  
   fprintf("h-HUE, s-SATURATION, v-VALUE\n");  
@@ -295,5 +247,5 @@ function next=nextFrame(current)
   number=int2str(current);   
   next=strcat("frame",number);
   next=strcat(next,".jpg");
-  i=i+1;
+  
 endfunction  
