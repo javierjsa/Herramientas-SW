@@ -26,7 +26,8 @@ current_frame="";
 %hmin,hmax,smin,smax,vmin,vmax,down,up
 values=[0,1,0,1,0,1,0,1];
 
-step=0.05;
+%valor de los incrementos
+step=0.04;
 %key ='_';
 new='_';
 old='_';

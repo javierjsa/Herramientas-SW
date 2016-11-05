@@ -1,10 +1,15 @@
 function color_tracking(filtro,directory)
+%Javier Saez Alonso
 %color_tracking([hmin,hmax,smin,smax,vmin,vmax],"./frames")
-%filtro video rotulador verde [0.32,0.45,0.2,1,0.17,0.65];
-%filtros video alumno
-% - amarillo [0.000,0.150,0.10,1.000,0.100,1.000]
-% - verde [0.320,0.450,0.100,1.000,0.100,1.000]
-% - azul  [0.500,0.900,0.100,1.000,0.150,1.000]
+%Los archivos deben tener nombre "frameX.jpg"(frame0.jpg,frame1.jpg..)
+%Frames alumno:
+%https://dl.dropboxusercontent.com/u/64814516/master/HSW/frames-jsa.zip
+%Filtro video rotulador verde:
+% - [0.320,0.450,0.200,1.000,0.170,0.650];
+%Filtros video alumno:  
+% - amarillo [0.050,0.200,0.400,1.000,0.40,1.000]
+% - verde [0.320,0.400,0.200,1.000,0.180,1.000]
+% - azul  [0.500,0.900,0.200,1.000,0.300,1.000]
      
 
   fflush(stdin);
@@ -12,17 +17,15 @@ function color_tracking(filtro,directory)
   actual=pwd;
   cd(directory)
   frames=dir ('*.jpg');
-
+  fig=figure;
   current=1;
 
   while(current<=length(frames))
 
     current_frame=nextFrame(current);
-    original=imread(current_frame);
-    figure(1);
-    imshow(original);
-    fprintf("%s\n",current_frame);
-    fflush(stdout);
+    original=imread(current_frame);    
+    figure(fig,'name',current_frame);
+    imshow(original);    
     
     %filtro y mascara
     filtrada=imsmooth(original,"Gaussian",3);    
@@ -53,14 +56,13 @@ function color_tracking(filtro,directory)
   
     props=regionprops(img_gray);
     if length(props)>0
-      [index,area]=selectArea(props);
-      fprintf("area %f\n",area);
+      [index,area]=selectArea(props);      
       coord=getfield(props(index),"BoundingBox"); 
       [w,h]=size(img_gray);
       %se descarta la region si su area 
-      %es menor que el 0.1% de la imagen
-      if area>((w*h)*0.001)
-        figure(1);
+      %es menor que el 0.05% de la imagen
+      if area>((w*h)*0.0005)
+        figure(fig);
         rectangle("Position",coord,"LineWidth",2,"EdgeColor",'green');
       endif  
       
@@ -70,7 +72,7 @@ function color_tracking(filtro,directory)
     new=kbhit(1);
    if (new=='q')    
      break;
-   endif    
+   endif     
   endwhile
   close all;
   cd(actual);
