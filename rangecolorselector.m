@@ -1,18 +1,19 @@
 function rangecolorselector(directory)
-%Creaates a HSV filter for color-based tracking
-%requires gnuplot to work
-%usage: rangecolorselector('./images')
-%jpg images only
-%Keys:
-% h - select hue
-% s - select saturation
-% v - select value
-% p - increase upper limit
-% o - decrease upper limit
-% l - increase lower limit
-% k - decrease lower limit
-% n - next frame
-% q - quit
+%Javier Saez Alonso
+%Crea un filtro HSV para color-tracking
+%Requiere gnuplot para funcionar correctamente
+%Uso: rangecolorselector('./images')
+%Solo imagenes jpg con nombre frameX.jpg (frame1.jpg, ...frame211.jpg)
+%Teclas:
+% h - selecciona hue
+% s - selecciona saturation
+% v - selecciona value
+% p - incrementar limite superior
+% o - decrementar limite superior
+% l - incrementar limite inferior
+% k - decrementar limite inferior
+% n - siguiente frame
+% q - salir
 
 clc;
 fflush(stdin);
@@ -28,7 +29,6 @@ values=[0,1,0,1,0,1,0,1];
 
 %valor de los incrementos
 step=0.04;
-%key ='_';
 new='_';
 old='_';
 values(8)=values(2);
@@ -45,67 +45,67 @@ waitforbuttonpress();
 close ();
 clc;
 while (new!='q')
-  %fprintf("%s\n",new);  
+
+  if (old=='_')
+    fprintf("Seleccione primero h-HUE, s-SATURATION, v-VALUE\n");    
+  endif 
   
   switch (new)
     case {'h','s','v'}
-      close ()    
-      %fprintf("h-HUE, s-SATURATION, v-VALUE\n");   
-      %output(values);   
+      clc;
+      close ()          
       values=update(values,new,old);    
       old=new;      
       fprintf("---------------------------------------------\n");
-      fprintf("Seleccionado: %s\n",old);
+      fprintf("Canal seleccionado: %s\n",old);
       fprintf("---------------------------------------------\n");
       fflush(stdout);   
-%%%%%%%%%FALTA COMPROBAR QUE VALOR MAX Y MIN NO SE CRUZAN %%%%%%%%%
     case 'p'
      if(values(8)<1)     
-      values(8)=values(8)+step;      
+      values(8)=values(8)+step;
+      canal(old);  
      else
       fprintf("---------------------------------------------\n");
       fprintf("Limite superior alcanzado\n"); 
       fprintf("---------------------------------------------\n");
       fflush(stdout);         
      endif     
-     values=update(values,new,old);
-     %output(values);      
+     values=update(values,new,old);          
      hsv_img= createMask(values,original);
      showImage(hsv_img,values);
      
     case 'o'      
-      if (values(8)>0)
-        values(8)=values(8)-step;            
+      if ((values(8)>0) && (values(8)>values(7)))
+        values(8)=values(8)-step; 
+        canal(old);        
       else  
         fprintf("---------------------------------------------\n");
         fprintf("Limite inferior alcanzado\n");
         fprintf("---------------------------------------------\n");
         fflush(stdout);
-      endif  
-      %output(values);
+      endif        
       values=update(values,new,old);
       hsv_img= createMask(values,original);
       showImage(hsv_img,values);
       
     case 'l'
-      if (values(7)<1)    
-        values(7)=values(7)+step;             
+      if ((values(7)<1) && (values(7)<values(8)))    
+        values(7)=values(7)+step;  
+        canal(old);      
       else  
         fprintf("---------------------------------------------\n");
-        fprinf("Limite inferior alcanzado\n");
+        fprintf("Limite inferior alcanzado\n");
         fprintf("---------------------------------------------\n");
         fflush(stdout);
       endif
-      values=update(values,new,old);
-      %output(values);             
+      values=update(values,new,old);              
       hsv_img= createMask(values,original);
       showImage(hsv_img,values);  
       
     case 'k'     
       if(values(7)>0) 
-        values(7)=values(7)-step;
-        %output(values);      
-        fflush(stdout);
+        values(7)=values(7)-step;          
+        canal(old); 
         values=update(values,new,old);
         hsv_img= createMask(values,original);
         showImage(hsv_img,values);
@@ -114,21 +114,19 @@ while (new!='q')
         fprintf("Limite inferior alcanzado\n");
         fprintf("---------------------------------------------\n");
         fflush(stdout);
-      endif     
-      %output(values);
+      endif           
       values=update(values,new,old);
       hsv_img= createMask(values,original);
       showImage(hsv_img,values);
       
     case 'n'
-      if(current<length(frames))        
+      if(current<length(frames)-1)        
         current=current+1;
+        current_frame=nextFrame(current);
         fprintf("---------------------------------------------\n");
         fprintf("Nueva imagen:%s\n",current_frame);
-        fprintf("---------------------------------------------\n");
-        %output(values);
-        fflush(stdout);
-        current_frame=nextFrame(current);
+        fprintf("---------------------------------------------\n");       
+        fflush(stdout);        
         original=imread(current_frame);
         hsv_img= createMask(values,original);
         showImage(hsv_img,values);
@@ -225,12 +223,13 @@ function values = update(values,new,old)
    
 endfunction   
 
+%muestra instrucciones por pantalla
 function leyenda()
   fprintf("---------------------------------------------\n");  
   fprintf("h-HUE, s-SATURATION, v-VALUE\n");  
   fprintf("o/p - decrementar/incrementar limite superior\n");
   fprintf("k/l - decrementar/incrementar limite inferior\n");
-  fprintf("n - siguiente imagen.  q- salir\n");
+  fprintf("n - siguiente imagen.  q - salir\n");
   fprintf("---------------------------------------------\n"); 
 endfunction
 
@@ -244,9 +243,21 @@ function output(values)
   fflush(stdout);  
 endfunction
 
+%genera el nombre del siguiente frame
 function next=nextFrame(current)  
   number=int2str(current);   
   next=strcat("frame",number);
   next=strcat(next,".jpg");
   
 endfunction  
+
+%indica el canal que se modifica
+function canal(old)
+  if (old!='_')  
+    fprintf("---------------------------------------------\n");
+    fprintf("Canal modificado: %s\n",old);
+    fprintf("---------------------------------------------\n");     
+  endif  
+  fflush(stdout);
+  
+endfunction
