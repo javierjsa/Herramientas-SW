@@ -34,7 +34,7 @@ if(filtro(1)>filtro(2) || filtro(3)>filtro(4) || filtro(5) > filtro(6)
   fprintf("---------------------------------------------\n");  
 else  
   while(current<=length(frames))
-  
+    init = tic;
     current_frame=nextFrame(current);
     if(exist(current_frame))        
       original=imread(current_frame);    
@@ -81,13 +81,17 @@ else
     props=regionprops(img_gray);
     if length(props)>0
       [index,area]=selectArea(props);      
-      coord=getfield(props(index),"BoundingBox"); 
+      coord=getfield(props(index),"BoundingBox");
+      cent=getfield(props(index),"Centroid");
       [w,h]=size(img_gray);
-      %se descarta la region si su area 
-      %es menor que el 0.05% de la imagen
+      %Se descarta la region si su area es menor que el 0.05% de la imagen
+      %permite que, al relajar el filtro para no perder el objeto,
+      %no haya falsos positivos cuando el objeto no esta en escena.
       if area>((w*h)*0.0005)
+        hold on;
         figure(fig);
-        rectangle("Position",coord,"LineWidth",2,"EdgeColor",'green');
+        rectangle("Position",coord,"LineWidth",2,"EdgeColor",'green');        
+        plot(cent(1),cent(2),'r.','MarkerSize',6);
       endif  
       
     endif    
@@ -96,7 +100,15 @@ else
     new=kbhit(1);
    if (new=='q')    
      break;
-   endif     
+   endif  
+   
+   %Esperar si no han transcurrido 33 milisecs.
+   %Alternativa: sleep(0.0033),
+   %sumaria 33ms al tiempo requerido por el ciclo
+   do
+     fin=toc(init);
+   until (fin >=0.0033)
+     
   endwhile
 endif  
   close all;
