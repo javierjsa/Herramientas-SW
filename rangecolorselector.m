@@ -23,27 +23,34 @@ cd(directory);
 frames=dir ('*.jpg');
 current=1;
 current_frame="";
+fig=figure;
 
 %hmin,hmax,smin,smax,vmin,vmax,down,up
 values=[0,1,0,1,0,1,0,1];
 
-%valor de los incrementos
+%Inicializacion de valores
 step=0.04;
 new='_';
 old='_';
 values(8)=values(2);
 values(7)=values(1);
-current_frame=nextFrame(current)
+
+%Carga primera imagen
+current_frame=nextFrame(current);
 original=imread(current_frame);
 hsv_img=rgb2hsv(original);
+figure(fig,'name',current_frame);
+imshow(original);
+
+%Estado inicial
 leyenda();
 output(values);
-imshow(original);
 fprintf("Pulse una tecla sobre la imagen para continuar\n");
 fflush(stdout);
 waitforbuttonpress();
 close ();
 clc;
+
 while (new!='q')
 
   if (old=='_')
@@ -72,7 +79,7 @@ while (new!='q')
      endif     
      values=update(values,new,old);          
      hsv_img= createMask(values,original);
-     showImage(hsv_img,values);
+     showImage(hsv_img,values,fig,current_frame);
      
     case 'o'      
       if ((values(8)>0) && (values(8)>values(7)))
@@ -86,7 +93,7 @@ while (new!='q')
       endif        
       values=update(values,new,old);
       hsv_img= createMask(values,original);
-      showImage(hsv_img,values);
+      showImage(hsv_img,values,fig,current_frame);
       
     case 'l'
       if ((values(7)<1) && (values(7)<values(8)))    
@@ -100,7 +107,7 @@ while (new!='q')
       endif
       values=update(values,new,old);              
       hsv_img= createMask(values,original);
-      showImage(hsv_img,values);  
+      showImage(hsv_img,values,fig,current_frame);
       
     case 'k'     
       if(values(7)>0) 
@@ -108,7 +115,7 @@ while (new!='q')
         canal(old); 
         values=update(values,new,old);
         hsv_img= createMask(values,original);
-        showImage(hsv_img,values);
+        showImage(hsv_img,values,fig,current_frame);
       else
         fprintf("---------------------------------------------\n");
         fprintf("Limite inferior alcanzado\n");
@@ -117,25 +124,27 @@ while (new!='q')
       endif           
       values=update(values,new,old);
       hsv_img= createMask(values,original);
-      showImage(hsv_img,values);
+      showImage(hsv_img,values,fig,current_frame);
       
     case 'n'
-      if(current<length(frames)-1)        
+      if(current<=length(frames))           
         current=current+1;
         current_frame=nextFrame(current);
+      endif    
+      if(exist(current_frame))  
         fprintf("---------------------------------------------\n");
         fprintf("Nueva imagen:%s\n",current_frame);
         fprintf("---------------------------------------------\n");       
         fflush(stdout);        
         original=imread(current_frame);
         hsv_img= createMask(values,original);
-        showImage(hsv_img,values);
+        showImage(hsv_img,values,fig,current_frame);
       else  
         fprintf("---------------------------------------------\n");
         fprintf("No hay mas imagenes\n");
         fprintf("---------------------------------------------\n");
         fflush(stdout);
-        showImage(hsv_img,values);
+        showImage(hsv_img,values,fig,current_frame);
       endif    
         
     otherwise
@@ -148,6 +157,9 @@ fflush(stdout);
 new=kbhit();
 clc;
 endwhile
+
+%Cierra e imprime los valores del filtro 
+%en el formato que acepta color_tracking
 close all;
 filtro=values(1:6);
 output(filtro);  
@@ -181,10 +193,11 @@ endfunction
 
 %refresca la imagen cuando cambian los datos
 %y la cierra para seguir leyendo del teclado
-function showImage(image,values)  
+function showImage(image,values,fig,current_frame)  
   fprintf("Pulse una tecla sobre la imagen para continuar\n");
   fflush(stdout);
   img=hsv2rgb(image);
+  figure(fig,'name',current_frame);
   imshow(img);
   waitforbuttonpress();
   clc;
