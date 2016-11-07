@@ -1,7 +1,7 @@
 function color_tracking(filtro,directory)
 %Javier Saez Alonso
 %color_tracking([hmin,hmax,smin,smax,vmin,vmax],"./frames")
-%Los archivos deben tener nombre "frameX.jpg"(frame0.jpg,frame1.jpg..)
+%Los archivos deben tener nombre "frameX.jpg"(frame0.jpg,frame211.jpg..)
 %Frames alumno:
 %https://dl.dropboxusercontent.com/u/64814516/master/HSW/frames-jsa.zip
 %Filtro video rotulador verde:
@@ -20,12 +20,36 @@ function color_tracking(filtro,directory)
   fig=figure;
   current=1;
 
+% Se comprueban los valores del filtro  
+max=filtro>1;
+min=filtro<0;
+vmax=filtro(max);
+vmin=filtro(min);  
+  
+  
+if(filtro(1)>filtro(2) || filtro(3)>filtro(4) || filtro(5) > filtro(6) 
+  ||length(vmax)>0 || length(vmin)>0)
+  fprintf("---------------------------------------------\n");
+  fprintf("Parametros del filtro incorrectos\n");
+  fprintf("---------------------------------------------\n");  
+else  
   while(current<=length(frames))
-
+  
     current_frame=nextFrame(current);
-    original=imread(current_frame);    
-    figure(fig,'name',current_frame);
-    imshow(original);    
+    if(exist(current_frame))        
+      original=imread(current_frame);    
+      figure(fig,'name',current_frame);
+      imshow(original);    
+    else
+      clc;
+      fprintf("---------------------------------------------\n");
+      fprintf("No hay mas frames\n");
+      fprintf("---------------------------------------------\n");
+      fflush(stdout);
+      waitforbuttonpress();
+      close all;
+      break;
+    endif  
     
     %filtro y mascara
     filtrada=imsmooth(original,"Gaussian",3);    
@@ -74,6 +98,7 @@ function color_tracking(filtro,directory)
      break;
    endif     
   endwhile
+endif  
   close all;
   cd(actual);
 endfunction
