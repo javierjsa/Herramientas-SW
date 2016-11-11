@@ -1,4 +1,5 @@
 import cv2
+
 import argparse
 import numpy as np
 # Javier Saez Alonso
@@ -17,18 +18,23 @@ origen = args['video']
 destino =args['out']
 
 cap = cv2.VideoCapture(origen)
-
+#fourcc = cap.get(cv.CV_CAP_PROP_FOURCC)
+fourcc = cap.get(int(6))
+print
 ret, frame = cap.read()
 
 shape=np.shape(frame)
 
 print(shape)
 
+#fourcc= cv2.VideoWriter_fourcc(*'XVID')
 #fourcc = cv2.VideoWriter_fourcc(*'H264')
-#out = cv2.VideoWriter(destino, fourcc, 24.0, (shape[1], shape[2]), True)
-fourcc= cv2.VideoWriter_fourcc('X', 'V', 'I','D')
+out = cv2.VideoWriter(destino, int(fourcc), 24.0, (shape[0], shape[1]), True)
+#out = cv2.VideoWriter(destino, 0x21, 23.98, (640,266), True)
+#fourcc= cv2.VideoWriter_fourcc('X', 'V', 'I','D')
 
-out = cv2.VideoWriter('avengers-flipped.avi',fourcc, 33.0, (640,480))
+#out = cv2.VideoWriter('avengers-flipped.avi',fourcc, 33.0, (640,480))
+#out = cv2.VideoWriter('prueba.avi',-1, 33.0, (640,480))
 
 
 #el detector de ojos solamente recibe las regiones donde se ha detectado una cara
