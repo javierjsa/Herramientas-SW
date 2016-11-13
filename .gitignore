@@ -10,3 +10,14 @@
 
 *~
 ~*
+
+#Videos
+
+*.avi
+*.mp4
+
+#Otros
+
+*.zip
+
+./.idea/
