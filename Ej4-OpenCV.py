@@ -1,42 +1,45 @@
-import numpy as np
 import cv2
-from matplotlib import pyplot as plt
+import argparse
+import glob
 
-img1c = cv2.imread('paisaje.jpg',1) # queryImage
-img2c = cv2.imread('coche.jpg',1) # trainImage
 
-img1 = cv2.cvtColor( img1c, cv2.COLOR_RGB2GRAY )
-img2 = cv2.cvtColor( img2c, cv2.COLOR_RGB2GRAY )
 
-# Initiate SIFT detector
+ap = argparse.ArgumentParser()
+ap.add_argument("-q", "--query", required = False, help = "imagen consultada")
+ap.add_argument("-c", "--covers", required = False, help = "imagenes a comparar")
+
+args = vars(ap.parse_args())
+
+imagen = args['query']
+compara = args['covers']
+
+compara = compara+ '*'
+list = glob.glob(compara)
+
+
+image = cv2.imread(imagen,1)
+img1 = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY )
 orb = cv2.ORB_create()
-
-# find the keypoints and descriptors with SIFT
-kp1, des1 = orb.detectAndCompute(img1,None)
-kp2, des2 = orb.detectAndCompute(img2,None)
-
-# create BFMatcher object
 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+kp1, des1 = orb.detectAndCompute(img1, None)
 
-# Match descriptors.
-matches = bf.match(des1,des2)
+keypoints = []
+for name in list:
+    img_comp = cv2.imread(name,1)
+    img2 = cv2.cvtColor(img_comp, cv2.COLOR_RGB2GRAY)
+    kp2, des2 = orb.detectAndCompute(img2,None)
+    matches = bf.match(des1,des2)
+    if len(matches) > 50:
+        keypoints.append((name, len(matches)))
 
-# Sort them in the order of their distance.
-matches = sorted(matches, key = lambda x:x.distance)
+keypoints.sort()
 
-# Draw first 10 matches.
-img4 = np.zeros(img1.shape)
-img3 = cv2.drawMatches(img1,kp1,img2,kp2,matches[:10],outImg=4, flags=2)
-plt.imshow(img3),plt.show()# create BFMatcher object
-bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+name, points = keypoints[0]
+print name
+print points
+img=cv2.imread(name)
+img=cv2.resize(img,fx=0.5,fy=0.5,dsize=(0,0),interpolation=cv2.INTER_CUBIC)
+cv2.imshow("Resultado",img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
-# Match descriptors.
-matches = bf.match(des1,des2)
-
-# Sort them in the order of their distance.
-matches = sorted(matches, key = lambda x:x.distance)
-
-# Draw first 10 matches.
-img3 = cv2.drawMatches(img1,kp1,img2,kp2,matches[:10], flags=2)
-
-plt.imshow(img3),plt.show()
