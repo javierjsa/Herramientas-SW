@@ -22,7 +22,7 @@ ret, frame = cap.read()
 shape= np.shape(frame)
 
 code = cv2.VideoWriter_fourcc(*'H264')
-out = cv2.VideoWriter(destino, fourcc=code, fps=24.0, frameSize=(shape[0], shape[1]),isColor=True)
+out = cv2.VideoWriter(destino, fourcc=code, fps=24.0, frameSize=(shape[0], shape[1]))
 
 #el detector de ojos solamente recibe las regiones donde se ha detectado una cara
 faceCascade = cv2.CascadeClassifier("./haarcascade_frontalface_default.xml")
@@ -33,9 +33,10 @@ eyeCascade = cv2.CascadeClassifier("./haarcascade_eye.xml")
 
 #tamano minimo ojos
 (minc,mind)=int(round(shape[1]*0.002)), int(round(shape[2]*0.002))
-
-while(cap.isOpened()):
+watchdog=0
+while(cap.isOpened() & watchdog<100):
     if ret:
+      watchdog=0
       gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
       rectangulos = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=20, minSize=(mina,minb))
       i=0
@@ -55,7 +56,8 @@ while(cap.isOpened()):
         break
 
       out.write(frame)
-
+    else:
+      watchdog+=1
     ret, frame = cap.read()
 
 out.release()
