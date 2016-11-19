@@ -74,44 +74,47 @@ def fusionarContornos(contours):
         rect = cv2.boundingRect(cont)
         bbox.append(rect)
 
-    index=1
-    while index < len(bbox):
+    index_a = 0
+    while (index_a<len(bbox)-1):
+        index = index_a+1
+        while index < len(bbox):
 
-            x1, y1, w1, h1 = bbox[index-1]
-            x2, y2, w2, h2 = bbox[index]
+                x1, y1, w1, h1 = bbox[index_a]
+                x2, y2, w2, h2 = bbox[index]
 
-            ac = (x2 >= x1) & (x2 <= (x1+w1))
-            bc = (y2 >= y1) & (y2 <= (y1+h1))
-            cc = ((y2+h2) >= y1) & ((y2+h2) <= (y1+h1))
+                ac = (x2 >= x1) & (x2 <= (x1+w1))
+                bc = (y2 >= y1) & (y2 <= (y1+h1))
+                cc = ((y2+h2) >= y1) & ((y2+h2) <= (y1+h1))
 
-            if ac & (bc | cc):
-               x_aux=x2
-               y_aux=y2
+                if ac & (bc | cc):
+                   x_aux=x2
+                   y_aux=y2
 
-               if x1 < x2:
-                   x_aux = x1
-               if y1<y2:
-                   y_aux = y1
+                   if x1 < x2:
+                       x_aux = x1
+                   if y1<y2:
+                       y_aux = y1
 
-               (x_op_2,y_op_2) = (x2+w2,y2+h2)
-               (x_op_1, y_op_1) = (x1 + w1, y1 + h1)
+                   (x_op_2,y_op_2) = (x2+w2,y2+h2)
+                   (x_op_1, y_op_1) = (x1 + w1, y1 + h1)
 
-               x_op_aux = x_op_2
-               y_op_aux = y_op_2
+                   x_op_aux = x_op_2
+                   y_op_aux = y_op_2
 
-               if x_op_1>x_op_2:
-                   x_op_aux=x_op_1
-               if y_op_1>y_op_2:
-                   y_op_aux=y_op_1
+                   if x_op_1>x_op_2:
+                       x_op_aux=x_op_1
+                   if y_op_1>y_op_2:
+                       y_op_aux=y_op_1
 
-               w_aux=x_op_aux-x_aux
-               h_aux=y_op_aux-y_aux
+                   w_aux=x_op_aux-x_aux
+                   h_aux=y_op_aux-y_aux
 
-               del bbox[index - 1]
-               bbox.insert(index - 1, (x_aux, y_aux, w_aux, h_aux))
-               del bbox[index]
+                   del bbox[index_a]
+                   bbox.insert(index_a, (x_aux, y_aux, w_aux, h_aux))
+                   del bbox[index]
 
-            index += 1
+                index += 1
+        index_a += 1
 
     return bbox
 
