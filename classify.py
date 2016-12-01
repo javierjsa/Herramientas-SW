@@ -1,6 +1,6 @@
 from sklearn.svm import LinearSVC
 from hog import HOG
-import dataset
+import dataset as dt
 import argparse
 import cPickle
 import cv2
@@ -20,31 +20,39 @@ def main():
     model = cPickle.load(f)
     f.close()
 
+    #convertir a b/w y blur
     image = cv2.imread(args['image'])
     gray = cv2.cvtColor(image,code=cv2.COLOR_BGR2GRAY)
     gauss = cv2.GaussianBlur(gray,(5,5),0)
 
-    # Python: cv2.Canny(image, threshold1, threshold2[, edges[, apertureSize[, L2gradient]]])
+    #canny y deteccion de contornos
     canny = cv2.Canny(image=gauss,threshold1=500,threshold2=200,apertureSize=5)
-
-    #cv2.imshow("cany",canny)
-    #cv2.waitKey(0)
-    #RETR_EXTERNAL cv2.RETR_TREE
     im2, contours, hierarchy = cv2.findContours(canny.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
-    contours_sort=ordenarContornos(contours)
-    contours_fus=fusionarContornos(contours_sort)
-    #cv2.drawContours(image, contours, -1, (255,255,255), 1)
+    #ordenar y fusionar contornos
+    contours_sort = ordenarContornos(contours)
+    contours_fus = fusionarContornos(contours_sort)
 
-
+    #pinta bounding boxes
     for cnt in contours_fus:
         (x, y, w, h) = cnt
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 1)
-    cv2.imshow("contornos",image)
-    cv2.waitKey(0)
+
+    #genera los descriptores
+    histogramas=procesar(gray,contours_fus)
+
+    #realiza la prediccion
+    for hist,cnt in zip(histogramas,contours_fus):
+        (x, y, w, h) = cnt
+        digit = model.predict(hist)[0]
+        cv2.putText(image, str(digit), (x,y-1), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 2)
+
+    #mostrar resultados
+    cv2.imshow("digitos", image)
+    cv2.waitKey()
 
 
-# Ordena los contornos pertenecientes a un fragmento de izquierda a derecha
+# Ordena los contornos de izquierda a derecha
 def ordenarContornos(contours):
     lista = []
     lista.append(contours[0])
@@ -67,6 +75,7 @@ def ordenarContornos(contours):
 
     return lista
 
+#fusiona contornos solapados, evita dividir un digito cuando hay discontinuidad en el trazo
 def fusionarContornos(contours):
 
     bbox=[]
@@ -112,11 +121,27 @@ def fusionarContornos(contours):
                    del bbox[index_a]
                    bbox.insert(index_a, (x_aux, y_aux, w_aux, h_aux))
                    del bbox[index]
-
-                index += 1
+                else:
+                    index += 1
         index_a += 1
 
     return bbox
 
+def procesar(imagen,contornos):
+    hog = HOG(orientations=18, pixelsPerCell=(10, 10),
+              cellsPerBlock=(1, 1), normalize=True)
+    hogs=[]
+    for cnt in contornos:
+        x,y,w,h= cnt
+        roi=imagen[y:y+h,x:x+w]
+        ret2, th2 = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        binary_img = roi > th2  # tipo bool
+        inv= 255-(binary_img.astype(np.uint8)*255)
+        deskew = dt.deskew(inv,20)
+        centered = dt.center_extent(deskew, (20, 20))
+        hist = hog.describe(centered)
+        hogs.append(hist)
+        cv2.destroyAllWindows()
+    return hogs
 if __name__ == "__main__":
     main()

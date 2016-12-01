@@ -10,3 +10,14 @@
 
 *~
 ~*
+
+*.mp4
+*.avi
+*.csv
+
+*.pyc
+
+*.zip
+*.rar
+
+./octave-workspace
