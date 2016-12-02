@@ -6,6 +6,7 @@ import cPickle
 import cv2
 import numpy as np
 
+
 def main():
 
     ap = argparse.ArgumentParser()
@@ -53,10 +54,10 @@ def main():
 
 
 # Ordena los contornos de izquierda a derecha
+# Elimina contorno muy pequenos o con relacion de aspecto incorrecta
 def ordenarContornos(contours):
     lista = []
     lista.append(contours[0])
-
     aux = contours[1:]
     for cont in aux:
         x, y, w, h = cv2.boundingRect(cont)
@@ -72,13 +73,38 @@ def ordenarContornos(contours):
             lista.insert(j, cont)
         else:
             lista.append(cont)
+    wac=[]
+    hac=[]
+    aux=[]
+    for cont in lista:
+        x, y, w, h = cv2.boundingRect(cont)
+        area = cv2.contourArea(cont)
+        if (w < (h*1.5)) & (area > 5):
+            aux.append(cont)
+            wac.append(w)
+            hac.append(h)
+    '''
+    wm = np.mean(np.array(wac))
+    hm = np.mean(np.array(hac))
+    dtw= np.std(np.array(wac))
+    dth=np.std(np.array(hac))
 
-    return lista
 
-#fusiona contornos solapados, evita dividir un digito cuando hay discontinuidad en el trazo
+    lista=[]
+    for cont in aux:
+        x, y, w, h = cv2.boundingRect(cont)
+        a = abs(wm.astype(np.int64)-w) > (0.2*wm.astype(np.int64))
+        b = abs(hm.astype(np.int64)-h) > (0.2*hm.astype(np.int64))
+        if a|b:
+            lista.append(cont)
+    '''
+    return aux
+
+# fusiona contornos solapados. Evita dividir un digito cuando hay discontinuidad en el trazo
+# al mismo tiempo, evita fusionar dos numeros comprobando la relacion de aspecto
 def fusionarContornos(contours):
 
-    bbox=[]
+    bbox = []
     for cont in contours:
         rect = cv2.boundingRect(cont)
         bbox.append(rect)
@@ -117,10 +143,12 @@ def fusionarContornos(contours):
 
                    w_aux=x_op_aux-x_aux
                    h_aux=y_op_aux-y_aux
-
-                   del bbox[index_a]
-                   bbox.insert(index_a, (x_aux, y_aux, w_aux, h_aux))
-                   del bbox[index]
+                   if (w_aux<=(1.2*h_aux)) & (h_aux<(2*w_aux)):
+                    del bbox[index_a]
+                    bbox.insert(index_a, (x_aux, y_aux, w_aux, h_aux))
+                    del bbox[index]
+                   else:
+                    index += 1
                 else:
                     index += 1
         index_a += 1
