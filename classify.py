@@ -143,7 +143,7 @@ def fusionarContornos(contours):
 
                    w_aux=x_op_aux-x_aux
                    h_aux=y_op_aux-y_aux
-                   if (w_aux<=(1.2*h_aux)) & (h_aux<(2*w_aux)):
+                   if (w_aux<=(1.2*h_aux)) & (h_aux<(1.5*w_aux)):
                     del bbox[index_a]
                     bbox.insert(index_a, (x_aux, y_aux, w_aux, h_aux))
                     del bbox[index]
