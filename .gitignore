@@ -1,12 +1,6 @@
-#Imagenes
-
 *.png
+*.avi
 *.jpg
-*.tiff
-*.gif
-*.jpeg
-
-#Temporales
-
-*~
-~*
+*.mp4
+*.pyc
+*.pdf
