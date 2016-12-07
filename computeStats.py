@@ -34,7 +34,7 @@ def main():
 
   data2d = [0]*7
   data3d = [0]*7
-  dataCo = [0]*5
+  dataCo = [0]*6
 
   for i in range(len(data)):
       [dId, dArea2D, dArea3D, dComplexity]=data[i]
@@ -48,7 +48,7 @@ def main():
             data2d[6]+=1;
          else:
             data2d[int(m.floor(val/50)+1)] += 1
-
+            #print("2D va=%f cat=%d\n" % (val, m.floor(val / 50) + 1))
       if dArea3D=='-' or tArea3D=='-':
           data3d[0] += 1
       else:
@@ -57,15 +57,16 @@ def main():
             data3d[6]+=1;
          else:
             data3d[int(m.floor(val/50)+1)] += 1
-            print("va=%f cat=%d\n" % (val,m.floor(val/50)+1))
+            #print("3D va=%f cat=%d\n" % (val,m.floor(val/50)+1))
       if dComplexity == '-' or tComplexity == '-':
           dataCo[0] +=1
       else:
           val = abs(float(dComplexity) - float(tComplexity))
           if val>=4:
-            dataCo[4] += 1
+            dataCo[5] += 1
           else:
             dataCo[int(m.floor(val)+1)]+=1
+            #print("2D va=%f cat=%d\n" % (val, int(m.floor(val)+1)))
 
   plt.figure(1)
   ypos = range(len(data2d))
@@ -88,7 +89,7 @@ def main():
   plt.figure(3)
   ypos = range(len(dataCo))
   ancho = 1 / 1.5
-  etiqc = ('Error','1','2','3','>4')
+  etiqc = ('Error','0','1','2','3','>4')
   gc = plt.bar(ypos, dataCo, ancho, align='center', color="red")
   plt.title('Datos Complejidad')
   plt.xticks(ypos, etiqc)
