@@ -15,17 +15,6 @@ def main():
   csv2 = args['truth']
   out =  args['out']
 
-  ''''
-  ALPHA = string.ascii_letters
-  with open(csv1) as file:
-      lines = (line for line in file if not line.startswith('I'))
-      data = np.loadtxt(lines, delimiter=',', skiprows=1)
-
-
-  data=np.loadtxt(fname=csv1,dtype='string',delimiter=',')
-
-  truth = np.loadtxt(fname=csv2, dtype='string', delimiter=',')
-  '''
   data = np.genfromtxt(csv1, delimiter=',', dtype=None, names=('Id', 'Area2D', 'Area3D', 'Complexity'))
   truth= np.genfromtxt(csv2, delimiter=',', dtype=None, names=('Id', 'Area2D', 'Area3D', 'Complexity'))
 
@@ -68,32 +57,51 @@ def main():
             dataCo[int(m.floor(val)+1)]+=1
             #print("2D va=%f cat=%d\n" % (val, int(m.floor(val)+1)))
 
+
+  total2d=float(sum(data2d));
+  total3d=float(sum(data3d));
+  totalCo=float(sum(dataCo));
+
+  data2d[:] = [(float(x) / total2d)*100 for x in data2d];
+  data3d[:] = [(float(x) / total3d)*100 for x in data3d];
+  dataCo[:] = [(float(x) / totalCo)*100 for x in dataCo];
+
+
+
   plt.figure(1)
   ypos = range(len(data2d))
   ancho = 1/1.5
   g2d = plt.bar(ypos, data2d, ancho,align='center', color="red")
-
+  plt.ylim(ymax=100, ymin=0)
   plt.title('Datos Area2D')
   etiq = ('Error', '[0-50)', '[50-100)', '[100-150)', '[150-200)', '[200-250)','>250')
   plt.xticks(ypos, etiq)
   g2d[0].set_color('k')
+  str=out+'/Area2D.png'
+  plt.savefig(str)
 
   plt.figure(2)
   ypos = range(len(data3d))
   ancho = 1/1.5
   g3d = plt.bar(ypos, data3d, ancho, align='center', color="red")
+  plt.ylim(ymax=100, ymin=0)
   plt.title('Datos Area3D')
   plt.xticks(ypos, etiq)
   g3d[0].set_color('k')
+  str = out + '/Area3D.png'
+  plt.savefig(str)
 
   plt.figure(3)
   ypos = range(len(dataCo))
   ancho = 1 / 1.5
   etiqc = ('Error','0','1','2','3','>4')
   gc = plt.bar(ypos, dataCo, ancho, align='center', color="red")
+  plt.ylim(ymax=100, ymin=0);
   plt.title('Datos Complejidad')
   plt.xticks(ypos, etiqc)
   gc[0].set_color('k')
+  str = out + '/Complejidad.png';
+  plt.savefig(str);
   plt.show()
 
 
