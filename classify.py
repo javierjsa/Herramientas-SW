@@ -26,12 +26,14 @@ def main():
     gray = cv2.cvtColor(image,code=cv2.COLOR_BGR2GRAY)
     gauss = cv2.GaussianBlur(gray,(5,5),0)
 
+    tam=image.size
+
     #canny y deteccion de contornos
     canny = cv2.Canny(image=gauss,threshold1=500,threshold2=200,apertureSize=5)
     im2, contours, hierarchy = cv2.findContours(canny.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
     #ordenar y fusionar contornos
-    contours_sort = ordenarContornos(contours)
+    contours_sort = ordenarContornos(contours,tam)
     contours_fus = fusionarContornos(contours_sort)
 
     #pinta bounding boxes
@@ -55,7 +57,7 @@ def main():
 
 # Ordena los contornos de izquierda a derecha
 # Elimina contorno muy pequenos o con relacion de aspecto incorrecta
-def ordenarContornos(contours):
+def ordenarContornos(contours,tam):
     lista = []
     lista.append(contours[0])
     aux = contours[1:]
@@ -79,7 +81,7 @@ def ordenarContornos(contours):
     for cont in lista:
         x, y, w, h = cv2.boundingRect(cont)
         area = cv2.contourArea(cont)
-        if (w < (h*1.5)) & (area > 5):
+        if (w < (h*1.7)) & (area > tam*0.00001):
             aux.append(cont)
             wac.append(w)
             hac.append(h)
@@ -143,7 +145,7 @@ def fusionarContornos(contours):
 
                    w_aux=x_op_aux-x_aux
                    h_aux=y_op_aux-y_aux
-                   if (w_aux<=(1.2*h_aux)) & (h_aux<(1.5*w_aux)):
+                   if (w_aux<=(2*h_aux)) & (h_aux<(2*w_aux)):
                     del bbox[index_a]
                     bbox.insert(index_a, (x_aux, y_aux, w_aux, h_aux))
                     del bbox[index]
@@ -167,7 +169,10 @@ def procesar(imagen,contornos):
         inv= 255-(binary_img.astype(np.uint8)*255)
         deskew = dt.deskew(inv,20)
         centered = dt.center_extent(deskew, (20, 20))
+        #cv2.imshow("digito", centered)
+        #cv2.waitKey()
         hist = hog.describe(centered)
+        hist.reshape(1,-1)
         hogs.append(hist)
         cv2.destroyAllWindows()
     return hogs
