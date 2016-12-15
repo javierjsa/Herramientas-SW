@@ -1,6 +1,9 @@
 function barCodeDetector(imagen)
+%barCodeDetector(imagen)
+%Javier Saez Alonso
 
-imr=imresize(imagen, 0.25);
+im=imread(imagen);
+imr=imresize(im, 0.25);
 im=rgb2gray(imr);
 [Gx,Gy] = imgradientxy(im,'sobel');
 
@@ -29,11 +32,11 @@ for i=2:length(prop)
         aux=a;      
     end    
 end    
-disp(i);
-%https://es.mathworks.com/matlabcentral/answers/97460-why-does-the-regionprops-command-not-return-the-correct-orientation-for-a-square-region
+
+%&&https://es.mathworks.com/matlabcentral/answers/97460-why-does-the-regionprops-command-not-return-the-correct-orientation-for-a-square-region
 sides = a.Extrema(4,:) - a.Extrema(6,:);
 angle = atan(-sides(2)/sides(1));
-
+%&&
 if (abs(angle-1.5708)<0.174533 || abs(angle-0)<0.174533)
     angle=0;
 end
