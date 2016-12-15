@@ -1,9 +1,12 @@
 function blurdetection(directory);
-%function blurry(directory,file_type);
-% determines if pictures in floder are blurry
-% jpg only
-% usage: blurdetection('./images')
+%function blurdetection(directory);
+%determines if pictures in folder are blurry
+%jpg only
+%usage: blurdetection('./images')
 
+  clc;
+  close all;
+  
   file_type='jpg';
   actual=pwd;
   cd(directory);
@@ -12,13 +15,15 @@ function blurdetection(directory);
   dir_struct=dir(exp);  
   filter=fspecial('laplacian');
   for i=1:length(dir_struct)
-    nom=dir_struct(i).name;
+    close all;
+    nom=dir_struct(i).name;    
     img=imread(nom);    
     img_gray=rgb2gray(img);
     img_filter=imfilter(img_gray,filter);
     [fil,col]= size(img_filter);
     img_vector=reshape(img_filter,1,fil*col);
     img_var=var(img_vector);
+    figure('name',nom);
     imshow(img);
     if img_var<90
       enf='Desenfocada';
