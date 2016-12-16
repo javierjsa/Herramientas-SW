@@ -21,7 +21,7 @@
 *.txt
 *.pdf
 *.zip
-
+*.odt
 
 octave-workspace
 
@@ -34,4 +34,5 @@ octave-workspace
 !barcodeimages/
 !blur/
 !.*/
+!*/
 
