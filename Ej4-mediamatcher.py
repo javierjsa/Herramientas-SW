@@ -5,8 +5,8 @@ import glob
 
 
 ap = argparse.ArgumentParser()
-ap.add_argument("-q", "--query", required = False, help = "imagen consultada")
-ap.add_argument("-c", "--covers", required = False, help = "imagenes a comparar")
+ap.add_argument("-q", "--query", required = True, help = "imagen consultada")
+ap.add_argument("-c", "--covers", required = True, help = "imagenes a comparar")
 
 args = vars(ap.parse_args())
 
@@ -32,7 +32,8 @@ for name in list:
     if len(matches) > 50:
         keypoints.append((name, len(matches)))
 
-keypoints.sort()
+
+keypoints.sort(key=lambda tup: tup[1], reverse=True)
 
 name, points = keypoints[0]
 print name
