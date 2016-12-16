@@ -5,9 +5,9 @@ import numpy as np
 
 
 ap = argparse.ArgumentParser()
-ap.add_argument("-v", "--video", required = False,
+ap.add_argument("-v", "--video", required = True,
 help = "ruta del video de origen")
-ap.add_argument("-o", "--out", required = False,
+ap.add_argument("-o", "--out", required = True,
 help = "ruta del video de destino")
 args = vars(ap.parse_args())
 

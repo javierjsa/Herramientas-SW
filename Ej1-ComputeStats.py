@@ -3,7 +3,7 @@ import argparse
 import math as m
 import matplotlib.pyplot as plt
 
-import plotly.plotly as py
+
 def main():
   ap = argparse.ArgumentParser()
   ap.add_argument("-d", "--data", required=True,  help="ruta csv datos deteccion")

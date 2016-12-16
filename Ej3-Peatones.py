@@ -4,10 +4,10 @@ import glob
 import argparse
 
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--images", required = False,
+ap.add_argument("-i", "--images", required = True,
 help = "ruta de las imagenes")
 
-ap.add_argument("-o", "--out", required = False,
+ap.add_argument("-o", "--out", required = True,
 help = "video de salida")
 args = vars(ap.parse_args())
 
