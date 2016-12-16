@@ -1,4 +1,3 @@
-from sklearn.svm import LinearSVC
 from hog import HOG
 import dataset as dt
 import argparse
